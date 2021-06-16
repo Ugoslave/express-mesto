@@ -13,6 +13,6 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use('/users', require('./routes/users'));
+app.use(require('./routes/users'));
 
 app.listen(PORT);
