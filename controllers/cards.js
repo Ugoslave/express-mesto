@@ -17,13 +17,15 @@ module.exports.getCards = (req, res) => {
 
 module.exports.deleteCardById = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
-    .orFail(new Error('CastError'))
+    .orFail(new Error('NotFound'))
     .then((card) => {
       res.send(card);
     })
     .catch((err) => {
-      if (err.message === 'CastError') {
+      if (err.message === 'NotFound') {
         res.status(404).send({ message: 'Карточки с таким ID не найдено' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Передан невалидный ID' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
@@ -31,9 +33,9 @@ module.exports.deleteCardById = (req, res) => {
 };
 
 module.exports.createCard = (req, res) => {
-  const { name, link } = req.body;
+  const { name, link, owner } = req.body;
 
-  Card.create({ name, link })
+  Card.create({ name, link, owner })
     .then((card) => {
       if (card) {
         res.send(card);
@@ -50,13 +52,15 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(new Error('CastError'))
+    .orFail(new Error('NotFound'))
     .then((card) => {
       res.send(card);
     })
     .catch((err) => {
-      if (err.message === 'CastError') {
+      if (err.message === 'NotFound') {
         res.status(404).send({ message: 'Карточки с таким ID не найдено' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Передан невалидный ID' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
@@ -69,13 +73,15 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(new Error('CastError'))
+    .orFail(new Error('NotFound'))
     .then((card) => {
       res.send(card);
     })
     .catch((err) => {
-      if (err.message === 'CastError') {
+      if (err.message === 'NotFound') {
         res.status(404).send({ message: 'Карточки с таким ID не найдено' });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Передан невалидный ID' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
