@@ -33,7 +33,7 @@ module.exports.deleteCardById = (req, res) => {
 };
 
 module.exports.createCard = (req, res) => {
-  const { name, link, owner } = req.body;
+  const { name, link, owner = req.user._id } = req.body;
 
   Card.create({ name, link, owner })
     .then((card) => {
