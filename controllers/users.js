@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 const validation = { runValidators: true };
@@ -36,9 +38,16 @@ module.exports.getUserById = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
+  bcrypt.hash(password, 10)
+    .then((hash) => {
+      User.create({
+        name, about, avatar, email, password: hash,
+      });
+    })
     .then((user) => {
       if (user) {
         res.send(user);
@@ -83,6 +92,33 @@ module.exports.changeUserAvatar = (req, res) => {
       }
       if (err.message === 'NotValidID') {
         res.status(404).send({ message: 'Пользователь с таким ID не найден' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  User.findOne(req.user._id, validation, { email })
+    .orFail(new Error('NotValidEmail'))
+    .then((user) => {
+      bcrypt.compare(password, user.password);
+      const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: 3600 });
+      res.send({ token });
+    })
+    .then((matched) => {
+      if (matched) {
+        res.send({ message: 'Всё прошло успешно' });
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Некорректно заполнены данные пользователя' });
+      }
+      if (err.message === 'NotValidEmail') {
+        res.status(401).send({ message: 'Неправильные почта или пароль' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
