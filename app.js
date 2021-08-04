@@ -32,6 +32,8 @@ app.use((req, res, next) => {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(require('./routes/users'));
+app.use(require('./routes/signin'));
+app.use(require('./routes/signup'));
 app.use(require('./routes/cards'));
 app.use(require('./routes/error'));
 
