@@ -16,20 +16,22 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.deleteCardById = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .orFail(new Error('NotFound'))
-    .then((card) => {
-      res.send(card);
-    })
-    .catch((err) => {
-      if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Карточки с таким ID не найдено' });
-      } else if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Передан невалидный ID' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+  if (req.user._id === Card.owner) {
+    Card.findByIdAndRemove(req.params.cardId)
+      .orFail(new Error('NotFound'))
+      .then((card) => {
+        res.send(card);
+      })
+      .catch((err) => {
+        if (err.message === 'NotFound') {
+          res.status(404).send({ message: 'Карточки с таким ID не найдено' });
+        } else if (err.name === 'CastError') {
+          res.status(400).send({ message: 'Передан невалидный ID' });
+        } else {
+          res.status(500).send({ message: 'Произошла ошибка' });
+        }
+      });
+  }
 };
 
 module.exports.createCard = (req, res) => {

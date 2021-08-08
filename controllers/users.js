@@ -101,7 +101,7 @@ module.exports.changeUserAvatar = (req, res) => {
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
 
-  User.findOne(req.user._id, validation, { email })
+  User.findOne(req.user._id, validation, ({ email }).select('+password'))
     .orFail(new Error('NotValidEmail'))
     .then((user) => {
       bcrypt.compare(password, user.password);
