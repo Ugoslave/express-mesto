@@ -1,4 +1,6 @@
 const Card = require('../models/card');
+const NotFoundError = require('../errors/not-found-err');
+const NotValidIdError = require('../errors/not-valid-id-err');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
@@ -8,9 +10,7 @@ module.exports.getCards = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Ничего не найдено' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.send(new NotFoundError('Ничего не найдено'));
       }
     });
 };
@@ -24,17 +24,15 @@ module.exports.deleteCardById = (req, res) => {
       })
       .catch((err) => {
         if (err.message === 'NotFound') {
-          res.status(404).send({ message: 'Карточки с таким ID не найдено' });
+          res.send(new NotFoundError('Карточки с таким ID не найдено'));
         } else if (err.name === 'CastError') {
-          res.status(400).send({ message: 'Передан невалидный ID' });
-        } else {
-          res.status(500).send({ message: 'Произошла ошибка' });
+          res.send(new NotValidIdError('Передан невалидный ID'));
         }
       });
   }
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link, owner = req.user._id } = req.body;
 
   Card.create({ name, link, owner })
@@ -42,10 +40,10 @@ module.exports.createCard = (req, res) => {
       if (card) {
         res.send(card);
       } else {
-        res.status(400).send({ message: 'Некорректно заполнены данные карточки' });
+        throw new NotValidIdError('Некорректно заполнены данные карточки');
       }
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(next);
 };
 
 module.exports.likeCard = (req, res) => {
@@ -60,11 +58,9 @@ module.exports.likeCard = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Карточки с таким ID не найдено' });
+        res.send(new NotFoundError('Карточки с таким ID не найдено'));
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Передан невалидный ID' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.send(new NotValidIdError('Передан невалидный ID'));
       }
     });
 };
@@ -81,11 +77,9 @@ module.exports.dislikeCard = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Карточки с таким ID не найдено' });
+        res.send(new NotFoundError('Карточки с таким ID не найдено'));
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Передан невалидный ID' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.send(new NotValidIdError('Передан невалидный ID'));
       }
     });
 };

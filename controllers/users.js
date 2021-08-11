@@ -1,6 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const NotFoundError = require('../errors/not-found-err');
+const NotValidIdError = require('../errors/not-valid-id-err');
+const NotValidEmailError = require('../errors/not-valid-email-err');
 
 const validation = { runValidators: true };
 const newData = { new: true };
@@ -13,9 +16,7 @@ module.exports.getUsers = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Ни один пользователь не найден' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.send(new NotFoundError('Ни один пользователь не найден'));
       }
     });
 };
@@ -28,16 +29,14 @@ module.exports.getUserById = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Пользователь с таким ID не найден' });
+        res.send(new NotFoundError('Пользователь с таким ID не найден'));
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Передан невалидный ID' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.send(new NotValidIdError('Передан невалидный ID'));
       }
     });
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -52,10 +51,10 @@ module.exports.createUser = (req, res) => {
       if (user) {
         res.send(user);
       } else {
-        res.status(400).send({ message: 'Некорректно заполнены данные пользователя' });
+        throw new NotValidIdError('Некорректно заполнены данные пользователя');
       }
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(next);
 };
 
 module.exports.changeUser = (req, res) => {
@@ -68,12 +67,9 @@ module.exports.changeUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Некорректно заполнены данные пользователя' });
-      }
-      if (err.message === 'NotValidID') {
-        res.status(404).send({ message: 'Пользователь с таким ID не найден' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.send(new NotValidIdError('Некорректно заполнены данные пользователя'));
+      } else if (err.message === 'NotValidID') {
+        res.send(new NotFoundError('Пользователь с таким ID не найден'));
       }
     });
 };
@@ -88,12 +84,9 @@ module.exports.changeUserAvatar = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Некорректно заполнены данные пользователя' });
-      }
-      if (err.message === 'NotValidID') {
-        res.status(404).send({ message: 'Пользователь с таким ID не найден' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.send(new NotValidIdError('Некорректно заполнены данные пользователя'));
+      } else if (err.message === 'NotValidID') {
+        res.send(new NotFoundError('Пользователь с таким ID не найден'));
       }
     });
 };
@@ -115,12 +108,9 @@ module.exports.login = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Некорректно заполнены данные пользователя' });
-      }
-      if (err.message === 'NotValidEmail') {
-        res.status(401).send({ message: 'Неправильные почта или пароль' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.send(new NotValidIdError('Некорректно заполнены данные пользователя'));
+      } else if (err.message === 'NotValidEmail') {
+        res.send(new NotValidEmailError('Неправильные почта или пароль'));
       }
     });
 };
