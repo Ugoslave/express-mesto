@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 const mongoose = require('mongoose');
 
 const cardSchema = new mongoose.Schema({
@@ -10,6 +11,13 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator(v) {
+        const regex = /ht{2}ps?\:\/\/[w{3}\.]?[a-z0-9\-]+\.[a-z]{2,3}[\/\S]*\#?/gi;
+        return regex.test(v);
+      },
+      message: 'Неверный формат URL',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

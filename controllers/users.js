@@ -4,6 +4,7 @@ const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
 const NotValidIdError = require('../errors/not-valid-id-err');
 const NotValidEmailError = require('../errors/not-valid-email-err');
+const UsingEmailError = require('../errors/using-email-err');
 
 const validation = { runValidators: true };
 const newData = { new: true };
@@ -36,7 +37,7 @@ module.exports.getUserById = (req, res) => {
     });
 };
 
-module.exports.createUser = (req, res, next) => {
+module.exports.createUser = (req, res) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -48,13 +49,15 @@ module.exports.createUser = (req, res, next) => {
       });
     })
     .then((user) => {
-      if (user) {
-        res.send(user);
-      } else {
-        throw new NotValidIdError('Некорректно заполнены данные пользователя');
-      }
+      res.send(user);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.send(new NotValidIdError('Некорректно заполнены данные пользователя'));
+      } else if (err.name === 'MongoError' && err.code === 11000) {
+        res.send(new UsingEmailError('Пользователь с таким email уже существует'));
+      }
+    });
 };
 
 module.exports.changeUser = (req, res) => {

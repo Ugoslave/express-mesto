@@ -32,4 +32,6 @@ app.use(require('./routes/users'));
 app.use(require('./routes/cards'));
 app.use(require('./routes/error'));
 
+app.use(require('./middlewares/errors'));
+
 app.listen(PORT);
