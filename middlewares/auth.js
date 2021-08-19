@@ -1,12 +1,11 @@
 const jwt = require('jsonwebtoken');
 const NotValidEmailError = require('../errors/not-valid-email-err');
-const NotAuthError = require('../errors/not-auth-err');
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    res.send(new NotAuthError('Необходима авторизация'));
+    res.send(new NotValidEmailError('Необходима авторизация'));
   }
 
   const token = authorization.replace('Bearer ', '');

@@ -1,12 +1,9 @@
 /* eslint-disable no-unused-vars */
 const { celebrate, Joi } = require('celebrate');
 
-module.exports.userValidation = (req, res) => {
+module.exports.getUserValidation = (req, res) => {
   celebrate({
     body: Joi.object().keys({
-      name: Joi.string().min(2).max(30),
-      about: Joi.string().min(2).max(300),
-      avatar: Joi.string().min(7),
       email: Joi.string().required().min(7),
       password: Joi.string().required().min(8),
     }).unknown(true),
@@ -16,7 +13,7 @@ module.exports.userValidation = (req, res) => {
     }).unknown(true),
 
     params: Joi.object().keys({
-      userId: Joi.string().alphanum().min(2).max(50),
+      userId: Joi.string().alphanum().required().length(24).hex(),
     }).unknown(true),
   });
 };

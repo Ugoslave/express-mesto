@@ -32,8 +32,6 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    minlength: 7,
-    maxlength: 100,
     unique: true,
     validate: {
       validator(v) {
@@ -45,7 +43,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 8,
     select: false,
   },
 });
